@@ -4,8 +4,12 @@ public class Cell {
     private String id;
     private boolean isStart;
     private boolean isFinal;
-    private ArrayList<Path> input = new ArrayList<>();
-    private ArrayList<Path> output = new ArrayList<>();
+    private ArrayList<Arrow> input = new ArrayList<>();
+    private ArrayList<Arrow> output = new ArrayList<>();
+
+    public ArrayList<Arrow> getOutput() {
+        return output;
+    }
 
     public Cell(String id, boolean isStart, boolean isFinal) {
         this.id = id;
@@ -13,12 +17,12 @@ public class Cell {
         this.isFinal = isFinal;
     }
     
-    public void addInput(Cell q, String alphabet){
-        input.add(new Path(q, alphabet));
+    public void addInput(Cell q, char alphabet){
+        input.add(new Arrow(q,this, alphabet));
     }
     
-    public void addOutput(Cell q, String alphabet){
-        output.add(new Path(q, alphabet));
+    public void addOutput(Cell q, char alphabet){
+        output.add(new Arrow(this,q, alphabet));
     }
 
     public boolean isFinal() {
@@ -35,19 +39,21 @@ public class Cell {
     
     public ArrayList<Cell> nextCell(){
         ArrayList<Cell> tmp = new ArrayList<>();
-        for (Path p : this.output) {
-            tmp.add(p.q);
+        for (Arrow p : this.output) {
+            tmp.add(p.q_finish);
         }
         return tmp;
     }
 }
 
-class Path{
-    Cell q;
-    String alphabet;
+class Arrow{
+    Cell q_start;
+    Cell q_finish;
+    char alphabet;
 
-    public Path(Cell q, String alphabet) {
-        this.q = q;
+    public Arrow(Cell q_start, Cell q_finish, char alphabet) {
+        this.q_start = q_start;
+        this.q_finish = q_finish;
         this.alphabet = alphabet;
     }
 }
