@@ -1,29 +1,41 @@
+import java.awt.BorderLayout;
+import java.awt.Button;
+import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.util.ArrayList;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.JTable;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 
-public class Draw extends JFrame {
+public class Draw {
 
     public static int x = 500;
     public static int y = 500;
 
-    public Draw() {
+    /*public Draw() {
         setTitle("Automate");
         setSize(x, y);
         setVisible(true);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-    }
+    }*/
 
     public static void main(String[] args) {
-        WindowUtilities.openInJFrame(new Shape(new Cell("q0", true, false)), x, y);
+        JFrame f = new Input(x/2, y/2);
+        f.setVisible(true);
+//        WindowUtilities.openInJFrame(new Automate(new Cell("q0", true, false)), x, y);
     }
 }
 
-class Shape extends JPanel {
+class Automate extends JPanel {
 
     private ArrayList<State> qi = new ArrayList<>();
     ArrayList<Level> l;
@@ -34,7 +46,7 @@ class Shape extends JPanel {
     static String symb_s = "";
     static String symb_f = "";
 
-    Shape(Cell q0) {
+    Automate(Cell q0) {
         q0 = tools.build(q0);
         this.l = tools.getCellList(q0);
         int tmp = 0;
@@ -117,4 +129,74 @@ class State {
         this.pos_y = pos_y;
     }
 
+}
+
+class Input extends JFrame{
+    
+    private String[] ch;
+    private int nb;
+    private GridLayout layout = new GridLayout(5, 0);
+    int x;
+    int y;
+    Input(int x ,int y){
+        super("Input");
+        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        this.x=x;
+        this.y=y;
+        
+        JTextArea txt1 = new JTextArea("enter alphabet:\nexample : 0,1");
+        txt1.setEditable(false);
+        JTextField field1 = new JTextField();
+//        field1.setPreferredSize(new Dimension(x, y/2));
+        
+                
+        JTextArea txt2 = new JTextArea("enter number of states");
+        txt2.setEditable(false);
+        JTextField field2 = new JTextField();
+        //field2.setPreferredSize(new Dimension(x, y/2));
+        
+        Button bt1 = new Button("confirm");
+        bt1.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                ch = field1.getText().split(",");
+                nb = Integer.parseInt(field2.getText());
+                Component tmp = (Component) e.getSource();
+                Input test = (Input) SwingUtilities.getRoot(tmp);
+                JFrame f = new Table(test.x, test.y, nb);
+                f.setVisible(true);
+                test.dispose();
+            }
+        });
+        this.setLayout(layout);
+        this.add(txt1);
+        this.add(field1);
+        this.add(txt2);
+        this.add(field2);
+        this.add(bt1);
+        this.setSize(x, y);
+        this.setResizable(false);
+    }
+    
+    public int getNb() {
+        return nb;
+    }
+
+    public String[] getCh() {
+        return ch;
+    }
+}
+
+class Table extends JFrame{
+    String[] colNames = {"","",""};
+    Table(int x, int y,int nb) {
+        super("Table");
+        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        String[][] data = new String[nb][3];
+        JTable t = new JTable(data, colNames);
+        this.add(t);
+        this.setSize(x, y);
+        this.setResizable(false);
+    }
+    
 }
