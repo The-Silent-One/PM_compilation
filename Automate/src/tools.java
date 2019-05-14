@@ -1,5 +1,6 @@
 
 import java.util.ArrayList;
+import javax.swing.table.TableModel;
 
 public class tools {
 
@@ -28,29 +29,70 @@ public class tools {
         for (int i = 0; i < ch.length(); i++) {
             ArrayList<Arrow> tmp = current.getOutput();
             int j = 0;
-            while (tmp.get(j).alphabet != ch.charAt(i)) {
+            while (j<tmp.size() && tmp.get(j).alphabet != ch.charAt(i)) {
                 j++;
             }
             if (j < tmp.size()) {
                 current = tmp.get(j).q_finish;
-            }else{
-                break;
+            } else {
+                return false;
             }
         }
 
         return current.isFinal();
     }
 
-    static Cell build(Cell q0) {
-        q0 = new Cell("q0", true, false);
-        Cell q1 = new Cell("q1", false, false);
-        Cell q2 = new Cell("q2", false, true);
+    static Cell buildFromTable(TableModel t) {
+        ArrayList<Cell> tmp = new ArrayList<>();
+        int ret = 0;
+        for (int i = 1; i < t.getRowCount(); i++) {
+            String name = (String) t.getValueAt(i,0);
+//            System.out.println(name);
+            boolean start = false;
+            boolean finish = false;
+            if (name.startsWith("->")) {
+                start = true;
+                name = name.substring(2);
+                ret = i - 1;
+            }
+            if (name.startsWith("*")) {
+                finish = true;
+                name = name.substring(1);
+            }
+            tmp.add(new Cell(name, start, finish));
+        }
 
-        q0.addOutput(q1, 'a');
-        q1.addInput(q0, 'a');
+        ArrayList<Character> alphabet = new ArrayList<>();
+        for (int i = 1; i < t.getColumnCount(); i++) {
+            String ts = (String) t.getValueAt(0,i);
+//            System.out.println(ts);
+            alphabet.add(ts.charAt(0));
 
-        q1.addOutput(q2, 'b');
-        q2.addInput(q1, 'b');
-        return q0;
+        }
+        for (int i = 1; i < t.getRowCount(); i++) {
+            for (int j = 1; j < t.getColumnCount(); j++) {
+//                System.out.println(i+" "+j);
+                String line = (String) t.getValueAt(i,j);
+                try {
+                    String[] values = line.split(",");
+                    for (int k = 0; k < values.length; k++) {
+                        String ss = (String)t.getValueAt(i,0);
+                        Cell qtmp_s = tmp.get(Integer.parseInt(ss.substring(ss.length()-1)));
+                        Cell qtmp_f = tmp.get(Integer.parseInt(values[k].substring(values[k].length()-1)));
+//                        System.out.println(qtmp_s.getId()+" "+qtmp_f.getId());
+                        qtmp_s.addOutput(qtmp_f, alphabet.get(j - 1));
+                    }
+                } catch (Exception ex) {
+//                    System.out.println(line);
+                    continue;
+                }
+            }
+
+        }
+//        ArrayList<Level> l =getCellList(tmp.get(ret));
+//        for (Level level : l) {
+//            System.out.println(level.q.getId() + " " + level.lvl);
+//        }
+        return tmp.get(ret);
     }
 }

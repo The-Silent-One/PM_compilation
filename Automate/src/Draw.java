@@ -1,5 +1,6 @@
 import java.awt.BorderLayout;
 import java.awt.Button;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -10,6 +11,7 @@ import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.util.ArrayList;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
@@ -43,11 +45,10 @@ class Automate extends JPanel {
     static int size = 20;
     static int x = 500;
     static int y = 500;
-    static String symb_s = "";
-    static String symb_f = "";
+    static String symb_s = "->";
+    static String symb_f = "*";
 
     Automate(Cell q0) {
-        q0 = tools.build(q0);
         this.l = tools.getCellList(q0);
         int tmp = 0;
         int count = 1;
@@ -67,7 +68,6 @@ class Automate extends JPanel {
                     pos_x, pos_y));
 
         }
-        //System.out.println(tools.isvalid(q0, "ab"));
     }
 
     public void paintComponent(Graphics g) {
@@ -163,7 +163,7 @@ class Input extends JFrame{
                 nb = Integer.parseInt(field2.getText());
                 Component tmp = (Component) e.getSource();
                 Input test = (Input) SwingUtilities.getRoot(tmp);
-                JFrame f = new Table(test.x, test.y, nb);
+                JFrame f = new Table(test.x, test.y, nb,ch.length,ch);
                 f.setVisible(true);
                 test.dispose();
             }
@@ -188,13 +188,66 @@ class Input extends JFrame{
 }
 
 class Table extends JFrame{
-    String[] colNames = {"","",""};
-    Table(int x, int y,int nb) {
+    int x = 500;
+    int y = 500;
+    Table(int x, int y,int nb ,int alpha_len , String[] ch) {
         super("Table");
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        String[][] data = new String[nb][3];
+        String[] colNames = new String[alpha_len+1];
+        colNames[0]="State";
+        for (int i = 0; i < ch.length; i++) {
+            colNames[i+1]=ch[i];
+        }
+        String[][] data = new String[nb+1][alpha_len+2];
+        data[0] = colNames;
+        
         JTable t = new JTable(data, colNames);
-        this.add(t);
+        this.add(t,BorderLayout.NORTH);
+        
+        Button b = new Button("Confirm");
+        b.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Component tmp = (Component) e.getSource();
+                Table test = (Table) SwingUtilities.getRoot(tmp);
+                Cell q0 = tools.buildFromTable(t.getModel());
+                JFrame w = new Word(test.x/2, test.y/4,q0);
+                w.setVisible(true);
+                WindowUtilities.openInJFrame(new Automate(q0), x, y);
+                test.dispose();
+            }
+        });
+        this.add(b,BorderLayout.SOUTH);
+        this.setSize(x, y);
+        this.setResizable(false);
+    }
+    
+}
+
+class Word extends JFrame{
+    JLabel light = new JLabel("•");
+
+    public Word(int x,int y,Cell q0) {
+        JTextField t = new JTextField();
+        Button b = new Button("Submit");
+        this.light.setForeground(Color.white);
+        
+        b.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String ch = t.getText();
+                if(tools.isvalid(q0, ch)){
+                    light.setForeground(Color.green);
+                }else{
+                    light.setForeground(Color.red);
+                }
+            }
+        });
+        
+        this.add(light,BorderLayout.NORTH);
+        this.add(t,BorderLayout.CENTER);
+        this.add(b,BorderLayout.SOUTH);
+        
         this.setSize(x, y);
         this.setResizable(false);
     }
